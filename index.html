@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US Marshal – Fratworld</title>
+<style>
+:root{--bg:#1c1f24;--panel:#262a31;--amber:#f5b301;--text:#e8e8e8;--muted:#9aa0a8;--line:#3a3f48}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:14px 24px;background:#15171b;border-bottom:3px solid var(--amber)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.brand img{height:44px}
+nav a{color:var(--text);text-decoration:none;margin-left:18px;text-transform:uppercase;font-size:13px;letter-spacing:1px}
+nav a:hover,nav a.on{color:var(--amber)}
+main{max-width:1000px;margin:0 auto;padding:32px 20px}
+h1,h2{text-transform:uppercase;letter-spacing:2px;color:var(--amber);margin-top:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;margin-bottom:20px}
+.hero{border-left:6px solid var(--amber);background:linear-gradient(120deg,#262a31,#1c1f24)}
+input,select,textarea{width:100%;padding:10px;margin:6px 0 12px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:4px;font:inherit}
+button{background:var(--amber);color:#111;border:0;padding:10px 16px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-radius:4px;cursor:pointer;margin:4px 0}
+button.ghost{background:transparent;color:var(--amber);border:1px solid var(--amber)}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+th{color:var(--amber);text-transform:uppercase;font-size:12px;letter-spacing:1px}
+.err{color:#ff6b6b}
+.row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1;min-width:180px}
+/* Animations : seules les propriétés transform et opacity sont animées (GPU, 60 fps) */
+header{transition:padding .3s ease,box-shadow .3s ease}
+header.compact{padding:8px 24px;box-shadow:0 4px 18px rgba(0,0,0,.45)}
+.brand img{transition:height .3s ease}
+header.compact .brand img{height:32px}
+
+.hero{position:relative;overflow:hidden;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:-40%;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(circle at 30% 40%,rgba(245,179,1,.28),transparent 50%),
+    radial-gradient(circle at 70% 60%,rgba(120,140,170,.22),transparent 55%);
+  animation:drift 16s ease-in-out infinite alternate;will-change:transform}
+@keyframes drift{
+  from{transform:translate3d(-6%,-4%,0) scale(1)}
+  to{transform:translate3d(6%,4%,0) scale(1.15)}
+}
+
+.reveal{opacity:0;transform:translate3d(0,24px,0);
+  transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+button{transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+
+.stats{display:flex;justify-content:space-around;text-align:center;flex-wrap:wrap;gap:16px}
+.stats .count{display:block;font-size:40px;font-weight:800;color:var(--amber);font-variant-numeric:tabular-nums}
+.stats small{color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-size:12px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+}
+/* Logo et accroche */
+.brand-name{display:block;font-size:22px;font-weight:900;letter-spacing:3px;color:var(--amber);line-height:1.1}
+.tagline{display:block;font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-top:3px}
+header.compact .tagline{display:none}
+
+/* Lisibilité de base */
+body{font-size:17px;line-height:1.65}
+.card p,.card li{line-height:1.65}
+th,td{font-size:15px;padding:12px 10px}
+input,select,textarea{font-size:16px;min-height:46px}
+button{min-height:46px;font-size:15px}
+.card{overflow-x:auto}
+
+/* Mobile */
+@media (max-width:700px){
+  header{padding:12px 16px}
+  .brand img{height:36px}
+  .brand-name{font-size:19px}
+  nav{display:flex;flex-wrap:wrap;gap:4px 14px;width:100%;justify-content:space-between}
+  nav a{margin-left:0;font-size:14px;padding:8px 2px;min-height:44px;display:inline-flex;align-items:center}
+  main{padding:20px 14px}
+  h1{font-size:24px;line-height:1.25}
+  h2{font-size:18px;letter-spacing:1px}
+  .hero h1{font-size:22px}
+  .card{padding:16px}
+  .row{flex-direction:column;gap:0}
+  .row>*{min-width:0;width:100%}
+  .stats>div{min-width:40%}
+  .stats .count{font-size:32px}
+  table{min-width:520px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="logo.png" alt="Logo US Marshal" onerror="this.style.display='none'">
+    <div>
+      <span class="brand-name">US Marshal</span>
+      <span class="tagline">Servir la loi · Protéger la ville</span>
+    </div>
+  </div>
+  <nav id="nav"></nav>
+</header>
+<main id="app"></main>
+
+<script>
+let token = localStorage.getItem('token');
+let me = null;
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function api(url, method = 'GET', data) {
+  const r = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: data ? JSON.stringify(data) : undefined,
+  });
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || 'Erreur');
+  return j;
+}
+
+/* ---------- Pages publiques ---------- */
+function home() {
+  return `
+  <div class="card hero">
+    <h1>Le US Marshal de Fratworld</h1>
+    <p>Le US Marshal est l’agence chargée de l’application des lois fédérales dans la ville. Elle exécute les mandats, protège les témoins et apporte son soutien aux forces de l’ordre locales lors des opérations sensibles.</p>
+  </div>
+  <div class="card stats">
+    <div><span class="count" data-to="120">0</span><small>Agents en service</small></div>
+    <div><span class="count" data-to="6">0</span><small>Unités</small></div>
+    <div><span class="count" data-to="14">0</span><small>Années d’activité</small></div>
+  </div>
+  <div class="card">
+    <h2>Missions</h2>
+    <p>Recherche et arrestation de fugitifs, escorte de personnes sous protection, sécurisation des tribunaux et coordination des opérations interservices.</p>
+  </div>
+  <div class="card">
+    <h2>Unités</h2>
+    <p>La <b>SOG</b> (Special Operations Group) est l’unité spéciale du service. Elle est accessible dès le grade US Marshal 1, après une sélection sur questionnaire et entretien.</p>
+  </div>`;
+}
+
+function loginView() {
+  return `
+  <div class="card" style="max-width:420px;margin:auto">
+    <h2>Connexion agent</h2>
+    <input id="em" type="email" placeholder="Adresse e-mail">
+    <input id="pw" type="password" placeholder="Mot de passe">
+    <button onclick="login()">Se connecter</button>
+    <p id="msg" class="err"></p>
+  </div>`;
+}
+
+async function login() {
+  try {
+    const r = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: $('#em').value, password: $('#pw').value }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error);
+    token = j.token;
+    localStorage.setItem('token', token);
+    await loadMe();
+    location.hash = '#/agents';
+  } catch (e) {
+    $('#msg').textContent = e.message;
+  }
+}
+
+/* ---------- Pages agents ---------- */
+async function agents() {
+  const list = await api('/api/agents');
+  return `
+  <h1>Effectifs</h1>
+  <div class="card"><table>
+    <tr><th>Nom</th><th>Grade</th><th>Recrutement</th></tr>
+    ${list.map((a) => `<tr><td>${esc(a.name)}</td><td>${esc(a.grade)}</td><td>${a.canRecruit ? 'Oui' : '—'}</td></tr>`).join('')}
+  </table></div>`;
+}
+
+async function equipment() {
+  const list = await api('/api/equipment');
+  const isAdmin = me.role === 'admin';
+  const form = isAdmin ? `
+  <div class="card">
+    <h2>Ajouter un équipement</h2>
+    <div class="row">
+      <input id="eq-s" placeholder="N° de série">
+      <input id="eq-t" placeholder="Type d’équipement">
+      <input id="eq-q" type="number" value="1" min="1">
+      <input id="eq-a" placeholder="Attribué à">
+    </div>
+    <button onclick="addEq()">Ajouter</button>
+  </div>` : '';
+  return `
+  <h1>Équipements</h1>${form}
+  <div class="card"><table>
+    <tr><th>N° de série</th><th>Type</th><th>Quantité</th><th>Attribué à</th>${isAdmin ? '<th></th>' : ''}</tr>
+    ${list.map((e) => `<tr>
+      <td>${esc(e.serial)}</td><td>${esc(e.type)}</td><td>${e.quantity}</td><td>${esc(e.assignedTo)}</td>
+      ${isAdmin ? `<td><button class="ghost" onclick="delEq(${e.id})">Retirer</button></td>` : ''}
+    </tr>`).join('')}
+  </table></div>`;
+}
+
+async function addEq() {
+  await api('/api/equipment', 'POST', {
+    serial: $('#eq-s').value, type: $('#eq-t').value,
+    quantity: $('#eq-q').value, assignedTo: $('#eq-a').value,
+  });
+  route();
+}
+async function delEq(id) {
+  await api('/api/equipment/' + id, 'DELETE');
+  route();
+}
+
+async function recruitment() {
+  const canOpen = me.role === 'admin' || me.canRecruit;
+  let html = '<h1>Recrutement SOG</h1>';
+
+  if (canOpen) {
+    const sessions = await api('/api/recruitment/sessions');
+    html += `
+    <div class="card">
+      <h2>Ouvrir une session</h2>
+      <p>Les agents qui reçoivent le code pourront répondre au questionnaire.</p>
+      <button onclick="openSession()">Générer un code</button>
+      <div id="code"></div>
+      <h2 style="margin-top:24px">Candidatures</h2>
+      ${sessions.length === 0 ? '<p>Aucune session.</p>' : ''}
+      ${sessions.map((s) => `
+        <p><b>Code ${esc(s.code)}</b> – ${s.submissions.length} candidature(s)</p>
+        ${s.submissions.map((x) => `
+          <div class="card"><b>${esc(x.agent)}</b>
+            ${x.answers.map((a, i) => `<p><i>${esc(s.questions[i])}</i><br>${esc(a)}</p>`).join('')}
+          </div>`).join('')}`).join('')}
+    </div>`;
+  }
+
+  html += `
+  <div class="card">
+    <h2>Rejoindre la sélection</h2>
+    <p>Saisissez le code communiqué par l’agent recruteur.</p>
+    <input id="rc" placeholder="Code de session">
+    <button onclick="joinSession()">Accéder au questionnaire</button>
+    <div id="qbox"></div>
+  </div>`;
+  return html;
+}
+
+async function openSession() {
+  const s = await api('/api/recruitment/sessions', 'POST');
+  $('#code').innerHTML = `<p>Code de session : <b style="font-size:24px;color:var(--amber)">${esc(s.code)}</b></p>`;
+}
+
+async function joinSession() {
+  try {
+    const j = await api('/api/recruitment/join', 'POST', { code: $('#rc').value });
+    $('#qbox').innerHTML = `
+      ${j.questions.map((q, i) => `<p><b>${esc(q)}</b></p><textarea rows="3" data-q="${i}"></textarea>`).join('')}
+      <button onclick="submitSession(${j.sessionId})">Envoyer ma candidature</button>`;
+  } catch (e) {
+    $('#qbox').innerHTML = `<p class="err">${esc(e.message)}</p>`;
+  }
+}
+
+async function submitSession(sessionId) {
+  const answers = [...document.querySelectorAll('#qbox textarea')].map((t) => t.value);
+  await api('/api/recruitment/submit', 'POST', { sessionId, answers });
+  $('#qbox').innerHTML = '<p>Candidature envoyée.</p>';
+}
+
+/* ---------- Administration ---------- */
+async function accounts() {
+  const [list, grades] = await Promise.all([api('/api/agents'), api('/api/grades')]);
+  return `
+  <h1>Gestion des comptes</h1>
+  <div class="card">
+    <h2>Créer un compte</h2>
+    <div class="row">
+      <input id="n-name" placeholder="Nom RP">
+      <input id="n-mail" type="email" placeholder="E-mail fictif">
+      <input id="n-pw" type="password" placeholder="Mot de passe">
+    </div>
+    <div class="row">
+      <select id="n-grade">${grades.map((g) => `<option>${g}</option>`).join('')}</select>
+      <label><input type="checkbox" id="n-rec" style="width:auto"> Peut ouvrir un recrutement</label>
+    </div>
+    <button onclick="createAgent()">Créer le compte</button>
+  </div>
+  <div class="card"><table>
+    <tr><th>Nom</th><th>E-mail</th><th>Grade</th><th>Actions</th></tr>
+    ${list.map((a) => `<tr>
+      <td>${esc(a.name)}</td><td>${esc(a.email)}</td>
+      <td><select onchange="upd(${a.id},{grade:this.value})">
+        ${grades.map((g) => `<option ${g === a.grade ? 'selected' : ''}>${g}</option>`).join('')}
+      </select></td>
+      <td>
+        <input type="password" id="pw-${a.id}" placeholder="Nouveau mot de passe" style="width:170px;display:inline">
+        <button class="ghost" onclick="upd(${a.id},{password:$('#pw-${a.id}').value})">MàJ</button>
+        <button class="ghost" onclick="upd(${a.id},{canRecruit:${!a.canRecruit}})">${a.canRecruit ? 'Retirer recrutement' : 'Droit recrutement'}</button>
+        ${a.role !== 'admin' ? `<button class="ghost" onclick="delAgent(${a.id})">Supprimer</button>` : ''}
+      </td>
+    </tr>`).join('')}
+  </table></div>`;
+}
+
+async function createAgent() {
+  try {
+    await api('/api/agents', 'POST', {
+      name: $('#n-name').value, email: $('#n-mail').value, password: $('#n-pw').value,
+      grade: $('#n-grade').value, canRecruit: $('#n-rec').checked,
+    });
+    route();
+  } catch (e) { alert(e.message); }
+}
+async function upd(id, data) {
+  try { await api('/api/agents/' + id, 'PUT', data); route(); }
+  catch (e) { alert(e.message); }
+}
+async function delAgent(id) {
+  if (confirm('Supprimer ce compte ?')) { await api('/api/agents/' + id, 'DELETE'); route(); }
+}
+
+/* ---------- Navigation ---------- */
+const routes = {
+  '#/': home, '#/connexion': loginView, '#/agents': agents,
+  '#/equipement': equipment, '#/recrutement': recruitment, '#/comptes': accounts,
+};
+const authRoutes = ['#/agents', '#/equipement', '#/recrutement', '#/comptes'];
+
+async function loadMe() {
+  me = null;
+  if (token) {
+    try { me = await api('/api/me'); }
+    catch { token = null; localStorage.removeItem('token'); }
+  }
+  buildNav();
+}
+
+function buildNav() {
+  const links = [['#/', 'Accueil']];
+  if (me) {
+    links.push(['#/agents', 'Agents'], ['#/equipement', 'Équipements'], ['#/recrutement', 'Recrutement']);
+    if (me.role === 'admin') links.push(['#/comptes', 'Administration']);
+    links.push(['#/logout', 'Déconnexion']);
+  } else {
+    links.push(['#/connexion', 'Connexion']);
+  }
+  $('#nav').innerHTML = links.map(([h, t]) => `<a href="${h}">${t}</a>`).join('');
+}
+
+async function route() {
+  let h = location.hash || '#/';
+  if (h === '#/logout') {
+    await api('/api/logout', 'POST').catch(() => {});
+    token = null;
+    localStorage.removeItem('token');
+    await loadMe();
+    location.hash = '#/';
+    return;
+  }
+  if (authRoutes.includes(h) && !me) { location.hash = '#/connexion'; return; }
+  if (h === '#/comptes' && me.role !== 'admin') { location.hash = '#/agents'; return; }
+  if (!routes[h]) h = '#/';
+
+  document.querySelectorAll('nav a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === h));
+  $('#app').innerHTML = '<p>Chargement…</p>';
+  try {
+    $('#app').innerHTML = await routes[h]();
+    initAnimations();
+  } catch (e) {
+    $('#app').innerHTML = `<p class="err">${esc(e.message)}</p>`;
+  }
+}
+
+/* ---------- Animations ---------- */
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const revealIO = new IntersectionObserver((entries) => {
+  entries.forEach((en) => {
+    if (en.isIntersecting) {
+      en.target.classList.add('in');
+      revealIO.unobserve(en.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+const countIO = new IntersectionObserver((entries) => {
+  entries.forEach((en) => {
+    if (en.isIntersecting) {
+      countUp(en.target);
+      countIO.unobserve(en.target);
+    }
+  });
+}, { threshold: 0.5 });
+
+function countUp(el) {
+  const to = Number(el.dataset.to);
+  const dur = 1600;
+  const t0 = performance.now();
+  const step = (now) => {
+    const k = Math.min((now - t0) / dur, 1);
+    el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); // ease-out cubique
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function initAnimations() {
+  document.querySelectorAll('.count').forEach((el) => {
+    if (reduceMotion) { el.textContent = el.dataset.to; return; }
+    el.textContent = '0';
+    countIO.observe(el);
+  });
+  if (reduceMotion) return;
+  document.querySelectorAll('#app > *').forEach((el, i) => {
+    el.classList.add('reveal');
+    el.style.transitionDelay = Math.min(i * 80, 320) + 'ms';
+    revealIO.observe(el);
+  });
+}
+
+// Header qui se compacte en descendant (throttlé sur requestAnimationFrame)
+let scrollTicking = false;
+window.addEventListener('scroll', () => {
+  if (scrollTicking) return;
+  scrollTicking = true;
+  requestAnimationFrame(() => {
+    document.querySelector('header').classList.toggle('compact', scrollY > 40);
+    scrollTicking = false;
+  });
+}, { passive: true });
+
+// Effet magnétique sur les boutons (souris uniquement, pas au tactile)
+if (!reduceMotion && matchMedia('(hover: hover)').matches) {
+  let active = null;
+  document.addEventListener('pointermove', (e) => {
+    const b = e.target.closest ? e.target.closest('button') : null;
+    if (active && active !== b) active.style.transform = '';
+    if (!b) { active = null; return; }
+    active = b;
+    const r = b.getBoundingClientRect();
+    const x = e.clientX - (r.left + r.width / 2);
+    const y = e.clientY - (r.top + r.height / 2);
+    b.style.transform = `translate3d(${x * 0.25}px, ${y * 0.25}px, 0)`;
+  }, { passive: true });
+}
+
+window.addEventListener('hashchange', route);
+loadMe().then(route);
+</script>
+</body>
+</html>
